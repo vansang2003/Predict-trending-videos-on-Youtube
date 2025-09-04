@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Tổng quan hệ thống dự đoán video trending{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Tổng video trending</p>
+                <p class="text-2xl font-bold text-gray-800">{{ dashboard_data.total_videos|default:"0" }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+        </div>
+  
+    </div>
+
+    <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Tổng lượt xem</p>
+                <p class="text-2xl font-bold text-gray-800">{{ dashboard_data.total_views|intcomma|default:"0" }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+            </div>
+        </div>
+     
+    </div>
+
+    <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Tổng lượt like</p>
+                <p class="text-2xl font-bold text-gray-800">{{ dashboard_data.total_likes|intcomma|default:"0" }}</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 13.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+            </div>
+        </div>
+       
+    </div>
+
+    <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Tổng lượt comment</p>
+                <p class="text-2xl font-bold text-gray-800">{{ dashboard_data.total_comments|intcomma|default:"0" }}</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+            </div>
+        </div>
+       
+    </div>
+</div>
+
+<!-- Main Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- View Trends Chart -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Xu hướng lượt xem</h3>
+            <select class="bg-gray-50 text-gray-700 text-sm rounded-lg px-3 py-1 border border-gray-300">
+                <option>7 ngày qua</option>
+                <option>30 ngày qua</option>
+                <option>90 ngày qua</option>
+            </select>
+        </div>
+        <div class="h-64 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
+            <div class="text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <p class="text-gray-500 font-medium">Biểu đồ xu hướng lượt xem</p>
+                <p class="text-gray-400 text-sm">Tổng lượt xem: {{ dashboard_data.total_views|intcomma|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engagement Rate Chart -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Tỷ lệ tương tác</h3>
+            <div class="flex space-x-2">
+                <span class="text-green-600 text-sm font-medium">+8.2%</span>
+                <span class="text-gray-500 text-sm">vs tháng trước</span>
+            </div>
+        </div>
+        <div class="h-64 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
+            <div class="text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+                <p class="text-gray-500 font-medium">Biểu đồ tỷ lệ tương tác</p>
+                <p class="text-gray-400 text-sm">Like: {{ dashboard_data.total_likes|intcomma|default:"0" }} | Comment: {{ dashboard_data.total_comments|intcomma|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Analysis Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Category Distribution -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Phân bố thể loại</h3>
+            <button class="text-blue-600 text-sm hover:text-blue-700">Xem chi tiết</button>
+        </div>
+        <div class="space-y-4">
+            {% for category, data in dashboard_data.categories.items %}
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                    <span class="text-gray-800">{{ category }}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-600 mr-2">{{ data.count }}</span>
+                    <div class="w-20 bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full progress-bar" data-width="{{ data.percentage }}"></div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">Chưa có dữ liệu thể loại</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Performing Channels -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Kênh hàng đầu</h3>
+            <button class="text-blue-600 text-sm hover:text-blue-700">Xem tất cả</button>
+        </div>
+        <div class="space-y-4">
+            {% for channel in dashboard_data.top_channels %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-white text-xs font-medium">{{ forloop.counter }}</span>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900">{{ channel.name|truncatechars:15 }}</div>
+                        <div class="text-xs text-gray-500">{{ channel.videoCount }} videos</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm font-medium text-gray-900">{{ channel.totalViews|intcomma }}</div>
+                    <!-- <div class="text-xs text-green-600">+{{ forloop.counter|add:5 }}%</div> -->
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">Chưa có dữ liệu kênh</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Video Performance Metrics -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Chỉ số video trung bình</h3>
+            <span class="text-green-600 text-sm font-medium">+12.3%</span>
+        </div>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <span class="text-gray-700">Lượt xem trung bình</span>
+                </div>
+                <span class="text-gray-900 font-medium">{{ dashboard_data.avg_views|intcomma|default:"0" }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 13.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                    <span class="text-gray-700">Lượt like trung bình</span>
+                </div>
+                <span class="text-gray-900 font-medium">{{ dashboard_data.avg_likes|intcomma|default:"0" }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span class="text-gray-700">Lượt comment trung bình</span>
+                </div>
+                <span class="text-gray-900 font-medium">{{ dashboard_data.avg_comments|intcomma|default:"0" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Analytics Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Geographic Distribution -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Phân bố địa lý</h3>
+            <select class="bg-gray-50 text-gray-700 text-sm rounded-lg px-3 py-1 border border-gray-300">
+                <option>Top 10 quốc gia</option>
+                <option>Tất cả quốc gia</option>
+            </select>
+        </div>
+        <div class="space-y-3">
+            {% for country, percentage in dashboard_data.geographic_data.items %}
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                    <span class="text-gray-800">{{ country }}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-600 mr-2">{{ percentage }}%</span>
+                    <div class="w-24 bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full progress-bar" data-width="{{ percentage }}"></div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">Chưa có dữ liệu địa lý</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Upload Frequency Analysis -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Tần suất đăng video</h3>
+            <span class="text-green-600 text-sm font-medium">+18.5%</span>
+        </div>
+        <div class="h-48 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
+            <div class="text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-gray-500 font-medium">Biểu đồ tần suất đăng</p>
+                <p class="text-gray-400 text-sm">Video uploads theo thời gian</p>
+            </div>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-800">{{ dashboard_data.upload_frequency.weekly|default:"0" }}</div>
+                <div class="text-sm text-gray-500">Video/tuần</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-800">{{ dashboard_data.upload_frequency.daily|default:"0" }}</div>
+                <div class="text-sm text-gray-500">Video/ngày</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Metrics -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Live Viewers -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Người xem trực tiếp</h3>
+            <div class="flex items-center">
+                <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                <span class="text-red-600 text-sm font-medium">LIVE</span>
+            </div>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-gray-800 mb-2">{{ dashboard_data.live_viewers|intcomma|default:"0" }}</div>
+            <div class="text-sm text-gray-500">Đang xem ngay bây giờ</div>
+        </div>
+        <div class="mt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Tăng so với 1h trước</span>
+                <span class="text-green-600 font-medium">+12.5%</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Kênh đang live</span>
+                <span class="text-gray-800 font-medium">{{ dashboard_data.live_channels|default:"0" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trending Keywords -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Từ khóa trending</h3>
+            <button class="text-blue-600 text-sm hover:text-blue-700">Cập nhật</button>
+        </div>
+        <div class="space-y-3">
+            {% for keyword in dashboard_data.trending_keywords %}
+            <div class="flex items-center justify-between">
+                <span class="text-gray-800 font-medium">{{ keyword.keyword }}</span>
+                <span class="text-{% if keyword.growth > 0 %}green{% else %}red{% endif %}-600 text-sm">
+                    {% if keyword.growth > 0 %}+{% endif %}{{ keyword.growth }}%
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">Chưa có dữ liệu từ khóa</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Platform Performance -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Hiệu suất nền tảng</h3>
+            <span class="text-green-600 text-sm font-medium">+8.9%</span>
+        </div>
+        <div class="space-y-4">
+            {% for platform, percentage in dashboard_data.platform_data.items %}
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="text-gray-700">{{ platform }}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-900 font-medium mr-2">{{ percentage }}%</span>
+                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full progress-bar" data-width="{{ percentage }}"></div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">Chưa có dữ liệu nền tảng</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Thao tác nhanh</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="/du-doan/" class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg transition-colors">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <div>
+                    <p class="font-semibold">Dự đoán video</p>
+                    <p class="text-blue-100 text-sm">Phân tích khả năng trending</p>
+                </div>
+            </div>
+        </a>
+        <a href="/du-lieu/" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-4 rounded-lg transition-colors">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <div>
+                    <p class="font-semibold">Xem dữ liệu</p>
+                    <p class="text-gray-600 text-sm">Khám phá video trending</p>
+                </div>
+            </div>
+        </a>
+        <a href="/kenh/" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-4 rounded-lg transition-colors">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                <div>
+                    <p class="font-semibold">Phân tích kênh</p>
+                    <p class="text-gray-600 text-sm">Theo dõi kênh nổi bật</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths from data attributes
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        if (width) {
+            bar.style.width = width + '%';
+        }
+    });
+});
+</script>

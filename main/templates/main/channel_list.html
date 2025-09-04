@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block page_title %}Phân tích Kênh{% endblock %}
+{% block page_subtitle %}Theo dõi và phân tích các kênh nổi bật{% endblock %}
+
+{% block content %}
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm">Tổng kênh</p>
+                <p class="text-2xl font-bold text-white">{{ channels|length|default:"0" }}</p>
+            </div>
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm">Kênh trending</p>
+                <p class="text-2xl font-bold text-white">{{ trending_channels|default:"0" }}</p>
+            </div>
+            <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm">Tổng video</p>
+                <p class="text-2xl font-bold text-white">{{ total_videos|default:"0" }}</p>
+            </div>
+            <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-400 text-sm">Thể loại</p>
+                <p class="text-2xl font-bold text-white">{{ categories|length|default:"0" }}</p>
+            </div>
+            <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Controls -->
+<div class="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex flex-col md:flex-row gap-4 flex-1">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Tìm kiếm kênh</label>
+                <input type="text" name="search" 
+                       class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                       placeholder="Tìm kiếm tên kênh..." 
+                       value="{{ request.GET.search }}">
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Thể loại</label>
+                <select name="category" 
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Tất cả thể loại</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Lọc
+            </button>
+            <button type="button" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Reset
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Channels Table -->
+<div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-700">
+        <h3 class="text-lg font-semibold text-white">Danh sách kênh nổi bật</h3>
+        <p class="text-gray-400 text-sm">Tổng số: <span class="font-semibold text-white">{{ channels|length }}</span> kênh</p>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full">
+            <thead class="bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">#</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Tên kênh</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Số video trending</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Thể loại chính</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Tổng lượt xem</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Trạng thái</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Phân tích</th>
+                </tr>
+            </thead>
+            <tbody class="bg-gray-800 divide-y divide-gray-700">
+                {% for channel in channels %}
+                <tr class="hover:bg-gray-700 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ forloop.counter }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-white font-medium text-sm">{{ channel.name|slice:":1"|upper }}</span>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-white">{{ channel.name }}</div>
+                                <div class="text-sm text-gray-400">{{ channel.subscribers|default:"N/A" }} subscribers</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium text-white">{{ channel.trending_count }}</span>
+                            <span class="ml-2 inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-900 text-green-200">
+                                Trending
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-900 text-blue-200">
+                            {{ channel.category }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ channel.total_views|intcomma|default:"N/A" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if channel.is_active %}
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-900 text-green-200">
+                            <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                <circle cx="4" cy="4" r="3" />
+                            </svg>
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-900 text-gray-200">
+                            <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                <circle cx="4" cy="4" r="3" />
+                            </svg>
+                            Inactive
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <a href="#" class="text-blue-400 hover:text-blue-300 font-medium">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Xem phân tích
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-8 text-center text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <p class="text-lg font-medium">Không có kênh nào</p>
+                        <p class="text-sm">Thử thay đổi bộ lọc hoặc tìm kiếm</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">Top kênh trending</h3>
+            <button class="text-blue-400 text-sm hover:text-blue-300">Xem tất cả</button>
+        </div>
+        <div class="space-y-4">
+            {% for i in "12345" %}
+            <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                <div class="flex items-center">
+                    <span class="text-gray-400 text-sm mr-3">#{{ forloop.counter }}</span>
+                    <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-white text-xs font-medium">C</span>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-white">Channel {{ forloop.counter }}</div>
+                        <div class="text-xs text-gray-400">{{ forloop.counter|add:5 }} video trending</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm font-medium text-white">{{ forloop.counter|add:10 }}K views</div>
+                    <div class="text-xs text-green-400">+{{ forloop.counter|add:5 }}%</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">Phân tích kênh</h3>
+            <select class="bg-gray-700 text-white text-sm rounded-lg px-3 py-1 border border-gray-600">
+                <option>7 ngày qua</option>
+                <option>30 ngày qua</option>
+                <option>90 ngày qua</option>
+            </select>
+        </div>
+        <div class="h-64 bg-gray-700 rounded-lg flex items-center justify-center">
+            <p class="text-gray-400">Biểu đồ phân tích kênh sẽ hiển thị tại đây</p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

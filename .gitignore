@@ -1,0 +1,71 @@
+##############################
+# Python
+##############################
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+.env
+
+##############################
+# Virtualenv
+##############################
+venv/
+.venv/
+
+##############################
+# Django / DB / Media
+##############################
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+
+##############################
+# Data & Models (thường lớn)
+##############################
+data/*.csv
+*.csv
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+*.npz
+*.npy
+
+# File nhị phân lớn phổ biến
+*.dll
+*.so
+*.dylib
+*.whl
+*.bin
+*.zip
+*.7z
+*.tar
+*.tar.gz
+
+##############################
+# Node / Frontend
+##############################
+node_modules/
+**/node_modules/
+*.lock
+.pnp.*
+.parcel-cache/
+.next/
+dist/
+build/
+
+##############################
+# System
+##############################
+.DS_Store
+Thumbs.db
+
+##############################
+# Project-specific
+##############################
+# Bỏ qua mẫu model và data có trong repo này
+xgb_pipeline.pkl
+data/
+
