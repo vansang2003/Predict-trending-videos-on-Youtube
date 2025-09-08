@@ -1,126 +1,96 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% block page_title %}Dự đoán Video Trending{% endblock %}
-{% block page_subtitle %}Phân tích khả năng trending của video YouTube{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <!-- Main Prediction Card -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
-        <div class="mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-2">Dự đoán Video Trending từ URL Youtube</h2>
-            <p class="text-gray-600 text-sm">Nhập URL video Youtube để phân tích khả năng trending</p>
+<section class="mb-8">
+    <div class="flex items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dự đoán khả năng Trending</h1>
+            <p class="text-slate-400 mt-2">Nhập URL video YouTube và hệ thống sẽ dùng mô hình XGBoost đã huấn luyện để ước tính khả năng trending.</p>
         </div>
+        <a href="/" class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2 text-sm transition">Trang chủ</a>
+    </div>
+</section>
 
+<div class="max-w-3xl">
+    <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6">
         {% if error %}
-            <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12h.01M12 16h.01"></path>
-                    </svg>
-                    <span class="font-medium">Lỗi:</span>
-                    <span class="ml-2">{{ error }}</span>
-                </div>
-            </div>
+        <div class="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-200 p-3 text-sm">
+            {{ error }}
+        </div>
         {% endif %}
 
-        <form method="post" class="space-y-4" id="predict-form">
+        <form method="post" id="predict-form" class="space-y-4">
             {% csrf_token %}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2" for="url">
-                    URL video Youtube <span class="text-red-500">*</span>
-                </label>
-                <input type="url" id="url" name="url"
-                       class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                       placeholder="https://youtube.com/watch?v=..." required value="{{ request.POST.url }}">
+            <label class="block text-sm text-slate-300" for="url">URL video YouTube<span class="text-rose-400"> *</span></label>
+            <div class="flex gap-3">
+                <input type="url" id="url" name="url" required placeholder="https://youtube.com/watch?v=..."
+                       value="{{ request.POST.url }}"
+                       class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-600/50" />
+                <button type="submit" id="submitBtn"
+                        class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-indigo-600 px-5 py-3 font-semibold shadow-lg shadow-fuchsia-600/20 hover:shadow-indigo-600/30 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                        <path d="M12 4v16m8-8H4" />
+                    </svg>
+                    Phân tích
+                </button>
             </div>
-            
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                Phân tích video
-            </button>
         </form>
     </div>
 
     {% if video_info %}
-    <!-- Video Information -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Thông tin video</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-3">
-                <div>
-                    <span class="text-gray-600 text-sm">Tiêu đề:</span>
-                    <p class="text-gray-900 font-medium">{{ video_info.title }}</p>
-                </div>
-                <div>
-                    <span class="text-gray-600 text-sm">Kênh:</span>
-                    <p class="text-gray-900 font-medium">{{ video_info.channel }}</p>
-                </div>
-                <div>
-                    <span class="text-gray-600 text-sm">Thể loại:</span>
-                    <p class="text-gray-900 font-medium">{{ video_info.categoryId }}</p>
-                </div>
-                <div>
-                    <span class="text-gray-600 text-sm">Tags:</span>
-                    <p class="text-gray-900 font-medium">{{ video_info.tags }}</p>
-                </div>
+    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6">
+        <div class="flex items-start gap-4">
+            <div class="w-48 rounded-lg overflow-hidden bg-black/20 hidden md:block">
+                <img src="{{ video_info.thumbnails.high.url|default:video_info.thumbnails.medium.url|default:video_info.thumbnails.default.url }}" alt="thumb" class="w-full h-full object-cover" />
             </div>
-            <div class="space-y-3">
-                <div class="flex justify-between">
-                    <span class="text-gray-600 text-sm">Lượt xem:</span>
-                    <span class="text-gray-900 font-medium">{{ video_info.viewCount|intcomma }}</span>
+            <div class="flex-1 space-y-3">
+                <h3 class="text-lg font-semibold leading-snug">{{ video_info.title }}</h3>
+                <div class="text-sm text-slate-300">Kênh: <span class="text-slate-100 font-medium">{{ video_info.channel }}</span></div>
+                <div class="grid grid-cols-3 gap-3 text-sm">
+                    <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2"><div class="text-xs text-slate-400">Views</div><div class="font-semibold">{{ video_info.viewCount|intcomma }}</div></div>
+                    <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2"><div class="text-xs text-slate-400">Likes</div><div class="font-semibold">{{ video_info.likeCount|intcomma }}</div></div>
+                    <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2"><div class="text-xs text-slate-400">Comments</div><div class="font-semibold">{{ video_info.commentCount|intcomma }}</div></div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600 text-sm">Lượt like:</span>
-                    <span class="text-gray-900 font-medium">{{ video_info.likeCount|intcomma }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600 text-sm">Lượt comment:</span>
-                    <span class="text-gray-900 font-medium">{{ video_info.commentCount|intcomma }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-600 text-sm">Mô tả:</span>
-                    <p class="text-gray-700 text-sm mt-1">{{ video_info.description|truncatechars:120 }}</p>
-                </div>
+                <div class="text-xs text-slate-400">Thể loại: <span class="text-slate-300">{{ video_info.categoryId }}</span></div>
+                {% if video_info.tags %}
+                <div class="text-xs text-slate-400">Tags: <span class="text-slate-300">{{ video_info.tags }}</span></div>
+                {% endif %}
+                {% if video_info.description %}
+                <p class="text-sm text-slate-300/90 line-clamp-3">{{ video_info.description }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
     {% endif %}
 
     {% if result %}
-    <!-- Prediction Results -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Kết quả dự đoán</h3>
+    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-gray-600 text-sm">Điểm số trending</span>
-                        <span class="text-2xl font-bold text-gray-900">{{ result.score }}%</span>
+                <div>
+                    <div class="flex items-center justify-between mb-2 text-sm text-slate-300">
+                        <span>Điểm số trending</span>
+                        <span class="text-2xl font-extrabold text-white">{{ result.score }}%</span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ result.score }}%"></div>
+                    <div class="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                        <div class="h-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-indigo-500" style="width: {{ result.score }}%"></div>
                     </div>
                 </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-600 text-sm">Xác suất trending</span>
-                        <span class="text-xl font-bold text-gray-900">{{ result.probability }}%</span>
-                    </div>
+                <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between">
+                    <span class="text-sm text-slate-300">Xác suất trending</span>
+                    <span class="text-xl font-bold text-white">{{ result.probability }}</span>
                 </div>
             </div>
             <div class="space-y-4">
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h4 class="text-gray-900 font-medium mb-2">Lý do</h4>
-                    <p class="text-gray-700 text-sm">{{ result.reason }}</p>
+                <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                    <h4 class="font-semibold mb-1">Lý do</h4>
+                    <p class="text-sm text-slate-300">{{ result.reason }}</p>
                 </div>
                 {% if result.suggestion %}
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 class="text-blue-800 font-medium mb-2">Gợi ý cải thiện</h4>
-                    <p class="text-blue-700 text-sm">{{ result.suggestion }}</p>
+                <div class="rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 px-4 py-3">
+                    <h4 class="font-semibold mb-1">Gợi ý cải thiện</h4>
+                    <p class="text-sm">{{ result.suggestion }}</p>
                 </div>
                 {% endif %}
             </div>
@@ -130,25 +100,21 @@
 </div>
 
 <script>
-    document.getElementById('predict-form').addEventListener('submit', function(e) {
+const form = document.getElementById('predict-form');
+const submitBtn = document.getElementById('submitBtn');
+if (form && submitBtn) {
+    form.addEventListener('submit', function(e){
         const url = document.getElementById('url').value;
         if (!url) {
             e.preventDefault();
             alert('Vui lòng nhập URL video YouTube');
             return false;
         }
-        
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<svg class="animate-spin w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Đang phân tích...';
+        const original = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-opacity="0.25" stroke-width="4"/><path d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"/></svg>';
         submitBtn.disabled = true;
-        
-        // Reset button after 5 seconds if form doesn't submit
-        setTimeout(() => {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }, 5000);
+        setTimeout(()=>{ submitBtn.innerHTML = original; submitBtn.disabled = false; }, 6000);
     });
+}
 </script>
-{% endblock %} 
+{% endblock %}

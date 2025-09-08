@@ -4,6 +4,8 @@ import joblib
 import requests
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import pandas as pd
 from django.shortcuts import render
 import numpy as np
 
@@ -468,4 +470,84 @@ def account(request):
         ]
     }
     
-    return render(request, 'main/account.html', context)
+    return render(request, 'main/user.html', context)
+
+def dashboard_csv_data(request):
+    """Serve aggregated analytics from local CSV for rich charts"""
+    csv_path = os.path.join('data', 'data_youtube_trending_video.csv')
+    if not os.path.exists(csv_path):
+        # Fallback to path used in training script
+        alt_path = os.path.join('data', 'data_youtube_trending_video.csv')
+        csv_path = alt_path
+    try:
+        df = pd.read_csv(csv_path)
+        # Normalize columns
+        for col in ['viewCount', 'likeCount', 'commentCount']:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+            else:
+                df[col] = 0
+        if 'categoryId' not in df.columns:
+            df['categoryId'] = 'Unknown'
+        if 'title' not in df.columns:
+            df['title'] = ''
+        if 'tags' not in df.columns:
+            df['tags'] = ''
+
+        # Top categories by count
+        cat_counts = df['categoryId'].astype(str).value_counts().head(12)
+        categories = [{'name': k, 'value': int(v)} for k, v in cat_counts.items()]
+
+        # Total metrics
+        totals = {
+            'views': int(df['viewCount'].sum()),
+            'likes': int(df['likeCount'].sum()),
+            'comments': int(df['commentCount'].sum()),
+            'videos': int(len(df))
+        }
+
+        # Like/Comment vs View scatter sample (limit for performance)
+        sample = df.sample(min(1000, len(df)), random_state=42) if len(df) > 0 else df
+        scatter = sample[['viewCount', 'likeCount', 'commentCount']].fillna(0).astype(int)
+        scatter_points = scatter.apply(lambda r: [int(r['viewCount']), int(r['likeCount']), int(r['commentCount'])], axis=1).tolist()
+
+        # Top videos by views
+        top_videos_df = df.sort_values('viewCount', ascending=False).head(20)
+        top_videos = {
+            'titles': top_videos_df['title'].astype(str).tolist(),
+            'views': top_videos_df['viewCount'].astype(int).tolist(),
+            'likes': top_videos_df['likeCount'].astype(int).tolist(),
+            'comments': top_videos_df['commentCount'].astype(int).tolist()
+        }
+
+        # Word cloud data from tags
+        def tag_split(s):
+            return [t.strip() for t in str(s).split(',') if t.strip()]
+        all_tags = []
+        df['tags'].apply(lambda s: all_tags.extend(tag_split(s)))
+        tag_series = pd.Series(all_tags)
+        tag_counts = tag_series.value_counts().head(100) if not tag_series.empty else pd.Series(dtype=int)
+        word_cloud = [{'name': k, 'value': int(v)} for k, v in tag_counts.items()]
+
+        # Engagement rate by bins of views
+        bins = [0, 1_000, 10_000, 100_000, 1_000_000, 10_000_000]
+        labels = ['<1K', '1K-10K', '10K-100K', '100K-1M', '1M-10M']
+        df['view_bin'] = pd.cut(df['viewCount'], bins=bins, labels=labels, include_lowest=True)
+        grp = df.groupby('view_bin').agg({'likeCount':'mean','commentCount':'mean','viewCount':'count'}).reindex(labels)
+        engagement_by_bin = {
+            'bins': labels,
+            'avgLikes': [float(x) if pd.notna(x) else 0.0 for x in grp['likeCount'].tolist()],
+            'avgComments': [float(x) if pd.notna(x) else 0.0 for x in grp['commentCount'].tolist()],
+            'counts': [int(x) if pd.notna(x) else 0 for x in grp['viewCount'].tolist()]
+        }
+
+        return JsonResponse({
+            'totals': totals,
+            'categories': categories,
+            'scatter': scatter_points,
+            'topVideos': top_videos,
+            'wordCloud': word_cloud,
+            'engagementByBin': engagement_by_bin
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
